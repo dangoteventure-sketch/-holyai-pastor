@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Pastor AI — HolyAI</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --deep:#0a0618;
+  --purple:#1a0a3c;
+  --mid:#2a1a5e;
+  --light:#3b1f7c;
+  --gold:#f5c842;
+  --gold2:#c9a02a;
+  --text:#e8e0ff;
+  --muted:rgba(232,224,255,0.5);
+  --green:#4ade80;
+  --red:#ff6b6b;
+}
+body{background:var(--deep);font-family:'Inter',sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+header{background:var(--purple);border-bottom:1px solid var(--mid);padding:12px 16px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.logo{font-family:'Cinzel',serif;font-size:20px;color:#fff;letter-spacing:2px}
+.logo span{color:var(--gold)}
+.status{margin-left:auto;display:flex;align-items:center;gap:6px;background:rgba(245,200,66,0.1);border:1px solid rgba(245,200,66,0.3);border-radius:20px;padding:4px 12px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.status-text{font-size:11px;color:var(--gold);font-weight:500}
+.verse-banner{background:linear-gradient(135deg,var(--purple),var(--mid));border-bottom:1px solid var(--mid);padding:10px 16px;flex-shrink:0}
+.verse-label{font-size:9px;color:var(--gold);text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-bottom:3px}
+.verse-text{font-size:12px;color:var(--text);font-style:italic;line-height:1.4}
+.verse-ref{font-size:10px;color:var(--muted);margin-top:2px}
+.chat-body{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px}
+.msg-row{display:flex;align-items:flex-end;gap:8px;animation:fadeIn 0.3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.msg-row.user{flex-direction:row-reverse}
+.avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;font-weight:700;font-family:'Cinzel',serif}
+.avatar.ai{background:var(--gold);color:var(--purple)}
+.avatar.user{background:var(--light);color:#fff}
+.bubble{max-width:78%;padding:11px 14px;border-radius:18px;font-size:13px;line-height:1.65;white-space:pre-wrap;word-wrap:break-word}
+.bubble.ai{background:var(--purple);border:1px solid var(--mid);border-bottom-left-radius:4px;color:var(--text)}
+.bubble.user{background:var(--light);color:#fff;border-bottom-right-radius:4px}
+.bubble.error{background:#3d0000;border:1px solid var(--red);color:#ffaaaa}
+.typing-row{display:flex;align-items:flex-end;gap:8px}
+.typing-bubble{background:var(--purple);border:1px solid var(--mid);border-radius:18px;border-bottom-left-radius:4px;padding:12px 16px;display:flex;gap:5px;align-items:center}
+.tdot{width:6px;height:6px;border-radius:50%;background:var(--gold);animation:tbounce 1.3s infinite}
+.tdot:nth-child(2){animation-delay:0.2s}
+.tdot:nth-child(3){animation-delay:0.4s}
+@keyframes tbounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}}
+.suggestions{display:flex;gap:6px;flex-wrap:wrap;padding:8px 16px;border-top:1px solid var(--mid);background:var(--deep);flex-shrink:0}
+.pill{background:var(--purple);border:1px solid var(--mid);border-radius:20px;padding:5px 12px;font-size:11px;color:var(--gold);cursor:pointer;transition:all 0.2s;white-space:nowrap}
+.pill:hover{background:var(--light);border-color:var(--gold)}
+.input-area{display:flex;align-items:center;gap:8px;padding:10px 16px 16px;background:var(--deep);border-top:1px solid var(--mid);flex-shrink:0}
+.chat-input{flex:1;background:var(--purple);border:1.5px solid var(--mid);border-radius:24px;padding:10px 16px;font-size:13px;color:#fff;font-family:'Inter',sans-serif;outline:none;transition:border-color 0.2s}
+.chat-input::placeholder{color:var(--muted)}
+.chat-input:focus{border-color:var(--gold)}
+.send-btn{width:42px;height:42px;background:var(--gold);border:none;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.2s}
+.send-btn:hover{background:var(--gold2);transform:scale(1.05)}
+.send-btn:disabled{opacity:0.4;cursor:not-allowed;transform:none}
+.send-btn svg{width:18px;height:18px;fill:var(--purple)}
+.connecting{position:fixed;inset:0;background:rgba(10,6,24,0.96);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:100}
+.connecting-logo{font-family:'Cinzel',serif;font-size:32px;color:#fff;letter-spacing:3px}
+.connecting-logo span{color:var(--gold)}
+.connecting-text{font-size:14px;color:var(--muted)}
+.spinner{width:40px;height:40px;border:3px solid var(--mid);border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<div class="connecting" id="connecting">
+  <div class="connecting-logo">Holy<span>AI</span></div>
+  <div class="spinner"></div>
+  <div class="connecting-text" id="connectingText">Starting Pastor AI...</div>
+</div>
+
+<header>
+  <div class="logo">Holy<span>AI</span></div>
+  <div class="status">
+    <div class="dot"></div>
+    <span class="status-text" id="statusText">Connecting...</span>
+  </div>
+</header>
+
+<div class="verse-banner">
+  <div class="verse-label">✨ Verse of the Day</div>
+  <div class="verse-text">"For I know the plans I have for you, declares the Lord, plans to prosper you and not to harm you."</div>
+  <div class="verse-ref">Jeremiah 29:11</div>
+</div>
+
+<div class="chat-body" id="chatBody">
+  <div class="msg-row">
+    <div class="avatar ai">P</div>
+    <div class="bubble ai">Shalom! I am Pastor AI 🙏 Your spiritual guide inside HolyAI. Ask me anything from the Bible in English, Yoruba, Igbo, Hausa or Swahili. What is on your heart today?</div>
+  </div>
+</div>
+
+<div class="suggestions">
+  <div class="pill" onclick="sendQ('What does the Bible say about fear?')">😟 About fear</div>
+  <div class="pill" onclick="sendQ('Please pray for me today')">🙏 Pray for me</div>
+  <div class="pill" onclick="sendQ('Give me a verse about hope')">✨ Hope verse</div>
+  <div class="pill" onclick="sendQ('Kini Bibeli so nipa igbagbo?')">🇳🇬 Yoruba</div>
+  <div class="pill" onclick="sendQ('Bible verse about marriage')">💍 Marriage</div>
+  <div class="pill" onclick="sendQ('How do I overcome temptation?')">⚔️ Temptation</div>
+</div>
+
+<div class="input-area">
+  <input class="chat-input" id="chatInput" type="text" placeholder="Ask Pastor AI anything..." disabled/>
+  <button class="send-btn" id="sendBtn" onclick="sendMessage()" disabled aria-label="Send">
+    <svg viewBox="0 0 24 24"><path d="M2 21L23 12 2 3v7l15 2-15 2v7z"/></svg>
+  </button>
+</div>
+
+<script>
+const API_KEY = 'AIzaSyDQusArEgXk9BHNBmtxwKxpufqZ978OhZw';
+const chatBody = document.getElementById('chatBody');
+const chatInput = document.getElementById('chatInput');
+const sendBtn = document.getElementById('sendBtn');
+const statusText = document.getElementById('statusText');
+const connecting = document.getElementById('connecting');
+const connectingText = document.getElementById('connectingText');
+
+const SYSTEM = `You are Pastor AI, a kind, warm and wise Christian pastor inside the HolyAI Bible app built for African Christians.
+- Always answer using Bible scripture with the exact verse and reference
+- Be encouraging, loving and speak like a loving African pastor
+- Support English, Yoruba, Igbo, Hausa and Swahili — always reply in the SAME language the user writes in
+- End EVERY reply with a short prayer or blessing
+- Keep replies clear, warm and not too long
+- Use emojis occasionally to make it warm and friendly 🙏`;
+
+const MODELS = [
+  'gemini-2.0-flash-lite',
+  'gemini-2.0-flash',
+  'gemini-1.5-flash',
+  'gemini-1.5-flash-8b',
+];
+
+let activeModel = null;
+const history = [];
+
+async function tryModel(model) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${API_KEY}`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      contents: [{parts: [{text: 'Say only the word: Amen'}]}],
+      generationConfig: {maxOutputTokens: 10}
+    })
+  });
+  const data = await res.json();
+  if (data.candidates && data.candidates[0] && data.candidates[0].content) return true;
+  console.log(model + ' failed:', JSON.stringify(data));
+  return false;
+}
+
+async function init() {
+  for (const model of MODELS) {
+    connectingText.textContent = `Connecting to ${model}...`;
+    try {
+      const ok = await tryModel(model);
+      if (ok) {
+        activeModel = model;
+        break;
+      }
+    } catch(e) {
+      console.log(model + ' error:', e.message);
+    }
+  }
+  connecting.style.display = 'none';
+  if (activeModel) {
+    statusText.textContent = 'Pastor AI Online ✓';
+    chatInput.disabled = false;
+    sendBtn.disabled = false;
+    addMsg('Pastor AI is ready! Ask me anything from the Word of God. 🙏✨', 'ai');
+  } else {
+    statusText.textContent = 'Connection failed';
+    statusText.style.color = 'var(--red)';
+    addMsg('Sorry, could not connect. Please refresh the page and try again. 🙏', 'error');
+  }
+}
+
+init();
+
+chatInput.addEventListener('keypress', e => {
+  if (e.key === 'Enter') { e.preventDefault(); sendMessage(); }
+});
+
+function sendQ(q) { chatInput.value = q; sendMessage(); }
+
+function addMsg(text, type) {
+  const row = document.createElement('div');
+  row.className = 'msg-row' + (type === 'user' ? ' user' : '');
+  const av = document.createElement('div');
+  av.className = 'avatar ' + (type === 'user' ? 'user' : 'ai');
+  av.textContent = type === 'user' ? 'U' : 'P';
+  const b = document.createElement('div');
+  b.className = 'bubble ' + (type === 'error' ? 'error' : type);
+  b.textContent = text;
+  if (type === 'user') { row.appendChild(b); row.appendChild(av); }
+  else { row.appendChild(av); row.appendChild(b); }
+  chatBody.appendChild(row);
+  chatBody.scrollTop = chatBody.scrollHeight;
+}
+
+function showTyping() {
+  const row = document.createElement('div');
+  row.className = 'typing-row'; row.id = 'typing';
+  const av = document.createElement('div');
+  av.className = 'avatar ai'; av.textContent = 'P';
+  const b = document.createElement('div');
+  b.className = 'typing-bubble';
+  b.innerHTML = '<div class="tdot"></div><div class="tdot"></div><div class="tdot"></div>';
+  row.appendChild(av); row.appendChild(b);
+  chatBody.appendChild(row);
+  chatBody.scrollTop = chatBody.scrollHeight;
+}
+
+function hideTyping() {
+  const t = document.getElementById('typing');
+  if (t) t.remove();
+}
+
+async function sendMessage() {
+  if (!activeModel) return;
+  const text = chatInput.value.trim();
+  if (!text) return;
+  chatInput.value = '';
+  chatInput.disabled = true;
+  sendBtn.disabled = true;
+  addMsg(text, 'user');
+  history.push({role:'user', parts:[{text}]});
+  showTyping();
+
+  try {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${activeModel}:generateContent?key=${API_KEY}`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        system_instruction: {parts:[{text: SYSTEM}]},
+        contents: history,
+        generationConfig: {temperature: 0.75, maxOutputTokens: 700}
+      })
+    });
+    const data = await res.json();
+    hideTyping();
+    if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+      const reply = data.candidates[0].content.parts[0].text;
+      history.push({role:'model', parts:[{text: reply}]});
+      addMsg(reply, 'ai');
+    } else if (data.error) {
+      addMsg('Error: ' + data.error.message, 'error');
+    } else {
+      addMsg('No response. Please try again. 🙏', 'error');
+    }
+  } catch(err) {
+    hideTyping();
+    addMsg('Connection error: ' + err.message, 'error');
+  } finally {
+    chatInput.disabled = false;
+    sendBtn.disabled = false;
+    chatInput.focus();
+  }
+}
+</script>
+</body>
+</html>
